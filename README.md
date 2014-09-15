@@ -18,13 +18,17 @@ android, ios, x86
 
 ###General Flags:
 ```
--h, --help         show this help message and exit
--a , --arch        Specify the target architecture (armv7 by default)
--f , --file        Specify AmigoMakefile path
--r , --root        Specify dir for external dependency soures
+-h, --help         Show this help message and exit
+-a, --arch         Specify the target architecture (armv7 by default)
+-f, --file         Specify AmigoMakefile path
+-r, --root         Specify dir for external dependency soures
 -d, --debug        Compile non-optimized with debug flags
---all              apply action to everything including dependencies
--v, --verbose      verbose mode
+--all              Apply action to everything including dependencies
+                   (Needs to be supported in AmigoMakefile)
+--gcc              Compile using gcc
+--cxx11            Compile with c++11 support
+-v, --verbose      Verbose mode
+--version          Print version
 ```
 
 ###Actions:
@@ -71,3 +75,9 @@ amigomake android -n ~/android-ndk/ -v 14
 # Build x86 without rebuilding external dependencies:
 amigomake x86
 ```
+
+###External Libraries:
+Some example external [packages](https://github.com/schernetsky/amigomake/blob/master/src/packages.py) are included:
+ * proj4, libpng, libjpeg, gmock
+ * sqlite, freetype, minizip, bzip
+ * openssl, cURL, libicu, boost
