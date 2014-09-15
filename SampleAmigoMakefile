@@ -1,0 +1,14 @@
+from cpackage import CPackage
+
+def configure(params):
+    pass
+
+def init(platform, params):
+    global package
+    package = CPackage('./', CPackage.EXECUTABLE, 'TestPackage')
+
+def build(platform, params):
+    package.build(platform)
+
+def clean(platform, params):
+    package.clean(platform)

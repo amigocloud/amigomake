@@ -1,0 +1,166 @@
+#!/usr/bin/python
+from package import error_str, warn_str
+from ios_platform import IOSPlatform
+from x86_platform import X86Platform
+from android_platform import AndroidPlatform
+import logging
+import amigo_config
+import os
+import runpy
+import argparse
+import imp
+import sys
+
+def main():
+    amigo_config.init()
+
+    ### Parser Arguments ###
+    parser = argparse.ArgumentParser(description='Build amigomake projects')
+    parser.add_argument('-a', '--arch', dest='arch',
+                        help='Specify the target architecture (armv7 by default)', metavar='')
+    parser.add_argument('-f', '--file', dest='file_path',
+                        help='Specify AmigoMakefile path', metavar='')
+    parser.add_argument('-r', '--root', dest='rootdir',
+                        help='Specify dir for external dependency soures', metavar='')
+    parser.add_argument('-d', '--debug', dest='debug',
+                        help='Compile non-optimized with debug flags', action="store_true")
+    parser.add_argument('--all', dest='all',
+                        help='Apply action to everything including dependencies',
+                        action="store_true")
+    parser.add_argument('--gcc', dest='gcc',
+                        help='Compile using gcc',
+                        action="store_true")
+    parser.add_argument('--cxx11', dest='cxx11',
+                        help='Compile with c++11 support',
+                        action="store_true")
+    parser.add_argument('-v', '--verbose', dest='verbose',
+                        help='Verbose mode',
+                        action="store_true")
+    parser.add_argument('action', default='build', nargs='?',
+                        help='Specifies the action the makefile should run (build, clean, test etc.)')
+    parser.add_argument('--version', help='Print version',
+                        action="version", version=amigo_config.VERSION)
+
+    ### Platform Subparser ###
+    subparsers = parser.add_subparsers(title='platforms', dest='platform',
+                                       description='Supported platforms',
+                                       help='Additional help')
+    ### Android ##
+    parser_android = subparsers.add_parser('android')
+    parser_android.add_argument('-n', '--ndk', required=True, dest='ndk_path',
+                                help='Specify path to the Android NDK(Required)', metavar='')
+    parser_android.add_argument('-v', '--sdk-version', required=True, dest='version',
+                                help='Specify Android SDK version to use(Required)', metavar='')
+    ### iOS ###
+    parser_ios = subparsers.add_parser('ios')
+    parser_ios.add_argument('-v', '--sdk-version', required=True, dest='version',
+                            help='Specify iOS SDK version to use(Required)', metavar='')
+    parser_ios.add_argument('--sim', dest='sim',
+                            help='Build for simulator',
+                            action="store_true")
+    ### X86 ##
+    subparsers.add_parser('x86')
+
+    params = parser.parse_args()
+
+    if params.verbose:
+        amigo_config.VERBOSE = True
+    if params.gcc:
+        amigo_config.GCC = True
+    if params.cxx11:
+        amigo_config.CXX11 = True
+        
+    if not params.arch:
+        params.arch = 'armv7'
+    if not params.rootdir:
+        params.rootdir = '/tmp/build/root/'
+
+    ### Import Makefile ###
+    file_path = params.file_path
+    if not file_path:
+        file_path = 'AmigoMakefile'
+
+    del vars(params)['file_path']
+    if os.path.exists(file_path):
+        dirname = os.path.dirname(file_path)
+        sys.path.append(dirname);
+        if dirname:
+            os.chdir(dirname)
+    else:
+        print error_str('ERROR') + ': ' + file_path + ' not found'
+        sys.exit(1)
+        return
+
+    makefile = None
+    try:
+        basename = os.path.basename(file_path)
+        with open(basename) as f:
+            makefile = imp.new_module('')
+            exec(f.read(), makefile.__dict__)
+    except:
+        print error_str('ERROR') + ': Failed to open AmigoMakefile(' + file_path + ')'
+        logging.exception('')
+        sys.exit(1)
+        return
+        
+    ### Run Configure ###
+    if(hasattr(makefile, 'configure')):
+        try:
+            makefile.configure(params)
+        except:
+            print error_str('ERROR') + ': configure failed!'
+            logging.exception('')
+            sys.exit(1)
+            return
+
+    ### Set Up Platform ###
+    if params.platform == 'android':
+        platform = AndroidPlatform("arm-linux-androideabi", params.arch, params.ndk_path,
+                                   params.version, "4.8", "/tmp/android-standalone-toolchain")
+    elif params.platform == 'ios':
+        platform = IOSPlatform(params.version, params.arch, params.sim)
+    else:
+        platform = X86Platform(params.arch)
+
+    params.rootdir += platform.name()
+
+    ### Setting Up Flags ###
+    extra_flags = '-Os'
+    if params.debug:
+        extra_flags = '-g -ggdb -O0'
+    platform.append_default_flags('CFLAGS', extra_flags)
+    platform.append_default_flags('CPPFLAGS', extra_flags)
+    platform.append_default_flags('CXXFLAGS', extra_flags)
+    platform.append_default_flags('LDFLAGS', extra_flags)
+
+    params.platform = platform
+    
+    ### Run init ###
+    if(hasattr(makefile, 'init')):
+        try:
+            makefile.init(platform, params)
+        except:
+            print error_str('ERROR') + ': init failed!'
+            logging.exception('')
+            sys.exit(1)
+            return
+
+    ### Run action ###
+    if(hasattr(makefile, params.action)):
+        try:
+            action = getattr(makefile, params.action)
+            action(platform, params)
+        except SystemExit:
+            sys.exit(1)
+            return
+        except:
+            print error_str('ERROR') + ': \'' + params.action + '\' failed!'
+            logging.exception('')
+            sys.exit(1)
+            return
+    else:
+        print warn_str('WARNING') + ': \'' + params.action + '\' does not exist in AmigoMakefile(' + file_path + ')'
+
+if __name__ == "__main__":
+    main()
+
