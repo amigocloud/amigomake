@@ -97,7 +97,7 @@ class CPackage(Package):
     def clean(self, platform, clean_deps=False):
         if self.__is_clean:
             return
-        print ('\t%-15s\t' % (self.name() + ':')) + 'Cleaning'
+        print (('\t%-15s\t' % (self.name() + ':')) + 'Cleaning')
         install_dir = self.install_dir(platform)
         if os.path.exists(install_dir):
             shutil.rmtree(install_dir)
@@ -131,11 +131,11 @@ class CPackage(Package):
     # Checks whether a filename is in the list of file names, if not it gets added
     def __check_duplicates(self, filename, files):
         if filename in files:
-            print (('\t%-15s\t' % (self.name() + ':')) +
+            print ((('\t%-15s\t' % (self.name() + ':')) +
                    error_str('ERROR') +
                    ': Duplicate source files found! (' + filename + ')\n\t' +
                    '\t\tPackage can only contain unique source filenames\n\t' +
-                   '\t\tOtherwise object files will collide')
+                   '\t\tOtherwise object files will collide'))
             return True
         else:
             files.add(filename)
@@ -164,7 +164,7 @@ class CPackage(Package):
         self.__outdated_sources = None
 
         # Collect all source files and headers to be compiled
-        print ('\t%-15s\t' % (self.name() + ':')) + 'Checking Files'
+        print (('\t%-15s\t' % (self.name() + ':')) + 'Checking Files')
         src_filenames = set()
         for file_path in self.files():
             filename = os.path.basename(file_path)
@@ -191,7 +191,7 @@ class CPackage(Package):
                         return
                     self._sources.add(file_path)
 
-        print ('\t%-15s\t' % (self.name() + ':')) + 'Building Dependencies'
+        print (('\t%-15s\t' % (self.name() + ':')) + 'Building Dependencies')
         dep_install_dirs = []
         for dep in self.deps():
             install_dir = dep.install_dir(platform)
@@ -209,7 +209,7 @@ class CPackage(Package):
 
         # Crush dependency libs into one static lib for IOS
         if self.__should_build_deps:
-            print ('\t%-15s\t' % (self.name() + ':')) + 'Crushing Deps'
+            print (('\t%-15s\t' % (self.name() + ':')) + 'Crushing Deps')
             index = 1
             for install_dir in dep_install_dirs:
                 for (dirpath, dirnames, filenames) in os.walk(install_dir):
@@ -218,16 +218,16 @@ class CPackage(Package):
                             os.remove(os.path.join(dirpath, filename))
                 if crush_deps(platform, install_dir, self.__deps_prefix + '_' + str(index), self.__crush_ldflags):
                     index += 1
-        print ('\t%-15s\t' % (self.name() + ':')) + 'Initializing Source Maps'
+        print (('\t%-15s\t' % (self.name() + ':')) + 'Initializing Source Maps')
         # Popuplate Source->Headers maps and Header->Sources maps
         self.__populate_src_maps()
         # Find Sources that require re-compilation
         self.__outdated_sources = self.__needs_recompile()
-        print ('\t%-15s\t' % (self.name() + ':')) + 'Configuring Platform'
+        print (('\t%-15s\t' % (self.name() + ':')) + 'Configuring Platform')
         platform.configure(self.install_dir(platform), env_vars, None, self.deps())
 
         # Add linking flags
-        print ('\t%-15s\t' % (self.name() + ':')) + 'Configuring Dependency Linking'
+        print (('\t%-15s\t' % (self.name() + ':')) + 'Configuring Dependency Linking')
         for dep_lib in self.__dep_libs:
             if dep_lib in self.__dep_lib_to_path_map:
                 platform.append_flags('LDFLAGS', " -L" + self.__dep_lib_to_path_map[dep_lib])
@@ -254,12 +254,16 @@ class CPackage(Package):
                     self.__add_dep_lib(dep_lib, lib_path)
                     platform.append_flags('LDFLAGS', " -l" + dep_lib)
         # Append custom flags
-        for key, flags in self._appended_flags.iteritems():
+        try:
+            app_flags = self._appended_flags.iteritems()
+        except AttributeError:
+            app_flags = self._appended_flags.items()
+        for key, flags in app_flags:
             platform.append_flags(key, ' '+flags)
 
         self._compile(platform)
         if self.__build_failed:
-            print ('\t%-15s\t' % (self.name() + ':')) + error_str('ERROR') + ': Compilation Failed!'
+            print (('\t%-15s\t' % (self.name() + ':')) + error_str('ERROR') + ': Compilation Failed!')
             sys.exit(1)
         else:
             self._link(platform)
@@ -272,11 +276,11 @@ class CPackage(Package):
 
     # Compilation step
     def _compile(self, platform):
-        print ('\t%-15s\t' % (self.name() + ':')) + 'Compiling'
+        print (('\t%-15s\t' % (self.name() + ':')) + 'Compiling')
         start_time = time.time()
         compiler_pool = multiprocessing.Pool(self._num_threads)
         compiler_pool.map_async(CompilerFunc(self, platform), self._sources).get(9999999)
-        print ('\t%-15s\t' % (self.name() + ':')) + 'Compiling took:\t' + str(time.time() - start_time) + 's'
+        print (('\t%-15s\t' % (self.name() + ':')) + 'Compiling took:\t' + str(time.time() - start_time) + 's')
         compiler_pool.close()
         compiler_pool.join()
         self.__build_failed = self.__build_failed or len(failed_files) > 0
@@ -293,11 +297,11 @@ class CPackage(Package):
         call_str = cc + " -c " + file_path + " " + " -o " + output + " " + (' '.join(cflags))
         status = call([call_str], env=platform.var_env(), shell=True)
         if check_extensions(file_path, ['.cpp', '.cc', '.mm']):
-            print '\t  CXX\t' + file_path
+            print ('\t  CXX\t' + file_path)
         else:
-            print '\t  CC\t' + file_path
+            print ('\t  CC\t' + file_path)
         if amigo_config.VERBOSE:
-            print call_str
+            print (call_str)
         if status != 0:
             failed_files.append(file_path)
 
@@ -313,16 +317,16 @@ class CPackage(Package):
                 if(filename.startswith(self.name())):
                     obj_files.append(os.path.join(dirpath, filename))
         if self.__package_type == CPackage.STATIC_LIB:
-            print ('\t%-15s\t' % (self.name() + ':')) + 'Preparing Static Library'
+            print (('\t%-15s\t' % (self.name() + ':')) + 'Preparing Static Library')
             output = os.path.join(self.__lib_path, self.__lib_prefix + self.name() + ".a")
             if not older(output, obj_files):
                 return
             call_str = ar + " -r " + output + " " + (' '.join(obj_files))
             if amigo_config.VERBOSE:
-                print call_str
+                print (call_str)
             status = call([call_str], env=platform.var_env(), shell=True)
         elif self.__package_type == CPackage.SHARED_LIB:
-            print ('\t%-15s\t' % (self.name() + ':')) + 'Preparing Shared Library'
+            print (('\t%-15s\t' % (self.name() + ':')) + 'Preparing Shared Library')
             self.__add_dep_lib(self.name(), self.__lib_path, True)
             output = os.path.join(self.__lib_path, self.__lib_prefix + self.name() + ".so")
             if not older(output, obj_files):
@@ -330,20 +334,20 @@ class CPackage(Package):
             call_str = (cc + " -shared -o " + output + " " +
                         (' '.join(obj_files)) + " " + (' '.join(ldflags)))
             if amigo_config.VERBOSE:
-                print call_str
+                print (call_str)
             status = call([call_str], env=platform.var_env(), shell=True)
         elif self.__package_type == CPackage.EXECUTABLE:
-            print ('\t%-15s\t' % (self.name() + ':')) + 'Preparing Executable'
+            print (('\t%-15s\t' % (self.name() + ':')) + 'Preparing Executable')
             output = os.path.join(self.__bin_path, self.name())
             if not older(output, obj_files):
                 return
             call_str = (cc + " -o " + output + " " +
                         (' '.join(obj_files)) + " " + (' '.join(ldflags)))
             if amigo_config.VERBOSE:
-                print call_str
+                print (call_str)
             status = call([call_str], env=platform.var_env(), shell=True)
         if status != 0:
-            print ('\t%-15s\t' % (self.name() + ':')) + error_str('ERROR') + ': Linking Failed!'
+            print (('\t%-15s\t' % (self.name() + ':')) + error_str('ERROR') + ': Linking Failed!')
             sys.exit(1)
 
     # Appends required include flags to the passed cflags var 
@@ -359,7 +363,7 @@ class CPackage(Package):
                 if header_path.endswith(header):
                     matched_headers.append(header_path)
             if matched_headers:
-                matched_headers.sort(lambda x,y: cmp(path_len(x), path_len(y)))
+                matched_headers = sorted(matched_headers, key=lambda x: path_len(x))
                 header_path = matched_headers[0]
                 if header_path in files_added:
                     continue

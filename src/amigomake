@@ -87,7 +87,7 @@ def main():
         if dirname:
             os.chdir(dirname)
     else:
-        print error_str('ERROR') + ': ' + file_path + ' not found'
+        print (error_str('ERROR') + ': ' + file_path + ' not found')
         sys.exit(1)
         return
 
@@ -98,7 +98,7 @@ def main():
             makefile = imp.new_module('')
             exec(f.read(), makefile.__dict__)
     except:
-        print error_str('ERROR') + ': Failed to open AmigoMakefile(' + file_path + ')'
+        print (error_str('ERROR') + ': Failed to open AmigoMakefile(' + file_path + ')')
         logging.exception('')
         sys.exit(1)
         return
@@ -108,7 +108,7 @@ def main():
         try:
             makefile.configure(params)
         except:
-            print error_str('ERROR') + ': configure failed!'
+            print (error_str('ERROR') + ': configure failed!')
             logging.exception('')
             sys.exit(1)
             return
@@ -140,7 +140,7 @@ def main():
         try:
             makefile.init(platform, params)
         except:
-            print error_str('ERROR') + ': init failed!'
+            print (error_str('ERROR') + ': init failed!')
             logging.exception('')
             sys.exit(1)
             return
@@ -154,12 +154,12 @@ def main():
             sys.exit(1)
             return
         except:
-            print error_str('ERROR') + ': \'' + params.action + '\' failed!'
+            print (error_str('ERROR') + ': \'' + params.action + '\' failed!')
             logging.exception('')
             sys.exit(1)
             return
     else:
-        print warn_str('WARNING') + ': \'' + params.action + '\' does not exist in AmigoMakefile(' + file_path + ')'
+        print (warn_str('WARNING') + ': \'' + params.action + '\' does not exist in AmigoMakefile(' + file_path + ')')
 
 if __name__ == "__main__":
     main()

@@ -9,7 +9,6 @@ import os
 import sys
 import shutil
 
-
 class ExternalCPackage(CPackage):
     def __init__(self, version, rootdir, package_type=CPackage.EXTERNAL, package_name=None, num_threads=1):
         if not package_name:
@@ -67,7 +66,7 @@ class ExternalCPackage(CPackage):
             if not os.path.exists(self.__zipname):
                 curl_call = ["curl", "-L", "-o", self.__zipname, self.__url] 
                 if amigo_config.VERBOSE:
-                    print ' '.join(curl_call)
+                    print (' '.join(curl_call))
                 call(curl_call)
                 if self.__zipname.endswith('.zip'):
                     archive = zipfile.ZipFile(self.__zipname, "r")
@@ -99,7 +98,7 @@ class ExternalCPackage(CPackage):
                     shutil.rmtree(self.local_path())
                 archive.extractall(unzip_path)
             if amigo_config.VERBOSE:
-                print "Project Path: " + self.local_path()                
+                print ("Project Path: " + self.local_path())
             archive.close()
         except:
             if os.path.exists(self.__zipname):
@@ -130,7 +129,7 @@ class ExternalCPackage(CPackage):
         for to_copy in self.__files_to_copy:
             dst = os.path.join(self.__local_path, to_copy[1])
             src = to_copy[0]
-            print ('\t%-15s\t' % (self.name() + ':')) + "Copying file " + src + " to " + dst
+            print (('\t%-15s\t' % (self.name() + ':')) + "Copying file " + src + " to " + dst)
             shutil.copy(src, dst)
 
         for dep in self.deps():
@@ -143,7 +142,11 @@ class ExternalCPackage(CPackage):
         install_dir = os.path.abspath(self.install_dir(platform))
         if not env_vars:
             env_vars = self._env_vars
-        for key, flags in self._appended_flags.iteritems():
+        try:
+            app_flags = self._appended_flags.iteritems()
+        except AttributeError:
+            app_flags = self._appended_flags.items()
+        for key, flags in app_flags:
             if key in env_vars:
                 env_vars[key] += ' '+flags
             else:
@@ -204,7 +207,7 @@ class ExternalCPackage(CPackage):
     def __patch_file(patchpath):
         call_str = "patch -p1 < " + patchpath
         if amigo_config.VERBOSE:
-            print call_str
+            print (call_str)
         call([call_str], shell=True)
 
     # Applies a archive of patches (tar format supported)

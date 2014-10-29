@@ -62,6 +62,6 @@ class AndroidPlatform(Platform):
             cxx11 = '--stl=libc++'
         call_str = builder + " " + platform + " " + install_dir + " " + toolchain + " " + system + " " + llvm + " " + cxx11
         if amigo_config.VERBOSE:
-            print call_str
+            print (call_str)
         call([call_str], shell=True)
         self.__toolchain_generated = True

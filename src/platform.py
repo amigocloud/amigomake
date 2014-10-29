@@ -31,7 +31,7 @@ def crush_deps(platform, install_dir, output_name, ldflags=''):
         os.chdir(extract_path)
         call_str = ar + " -x " + lib_file
         if amigo_config.VERBOSE:
-            print call_str
+            print (call_str)
         call([call_str], shell=True)
         files = os.listdir(extract_path)
         i = 0
@@ -42,7 +42,7 @@ def crush_deps(platform, install_dir, output_name, ldflags=''):
         if lipo:
             call_str = lipo + ' -create -arch ' + platform.arch() + ' ' + lib_file + ' -output ' + lib_file
             if amigo_config.VERBOSE:
-                print call_str
+                print (call_str)
             call([call_str], shell=True)
     status = False
     os.chdir(tmp_path)
@@ -50,17 +50,17 @@ def crush_deps(platform, install_dir, output_name, ldflags=''):
         ar_flag = 'crus'
         call_str = ar + ' ' + ar_flag + ' ' + output + '.a' + " " +tmp_path+"/*/*.o"
         if amigo_config.VERBOSE:
-            print call_str
+            print (call_str)
         call([call_str], shell=True)
         if lipo:
             call_str = lipo + ' -create -arch ' + platform.arch() + ' ' + output + '.a' + ' -output ' + output + '.a'
             if amigo_config.VERBOSE:
-                print call_str
+                print (call_str)
             call([call_str], shell=True)
         call_str = (cc + " -shared -o " + output + '.so' +
               " -Wl,--whole-archive " + output + '.a' + " -Wl,--no-whole-archive " + ldflags)
         if amigo_config.VERBOSE:
-            print call_str
+            print (call_str)
         call([call_str], shell=True)
         status = True
     os.chdir(cwd)
@@ -139,7 +139,7 @@ class Platform(object):
                 if dep_dir is not None:
                     dep_dirs.add(dep_dir)
                 else:
-                    print 'No install dir in package ' + dep.name() + ' for ' + self.name()
+                    print ('No install dir in package ' + dep.name() + ' for ' + self.name())
 
         for dep_dir in dep_dirs:
             lib_path = os.path.join(dep_dir, "lib")
@@ -161,7 +161,7 @@ class Platform(object):
             else:
                 configure += " --prefix=" + install_dir
             if amigo_config.VERBOSE:
-                print configure
+                print (configure)
             call([configure], shell=True, env=self.var_env())
 
     def _set_default_flags(self, key, flags):
