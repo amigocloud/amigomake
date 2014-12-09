@@ -73,10 +73,7 @@ def main():
         amigo_config.CXX11 = True
         
     if not params.arch:
-        if params.platform == 'android':        
-            params.arch = 'arm'
-        else:
-            params.arch = 'armv7'
+        params.arch = 'armv7'
     if not params.rootdir:
         params.rootdir = '/tmp/build/root/'
 
@@ -122,7 +119,7 @@ def main():
     if params.platform == 'android':
         toolchain = params.arch
         if 'arm' in toolchain:
-            toolchain += '-linux-androideabi'
+            toolchain = 'arm-linux-androideabi'
         elif 'x86' not in toolchain:
             toolchain += '-linux-android'
         if not params.toolchain_version:

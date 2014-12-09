@@ -33,12 +33,19 @@ class AndroidPlatform(Platform):
         self.append_default_flags(Platform.CONFIG_FLAGS,
                                   " --host=" + arch + "-android-linux" +
                                   " --target=" + self.name())
-        self.append_default_flags('LDFLAGS',
+
+        v7_ldflags = ''
+        if arch == 'armv7':
+            v7_ldflags = ' -march=armv7-a -Wl,--fix-cortex-a8'
+        self.append_default_flags('LDFLAGS', v7_ldflags + 
                                   " -fPIC -Wl," +
                                   "-rpath-link=" + self.sysroot() + "/usr/lib" +
                                   " -L" + self.sysroot() + "/usr/lib -L" + self.gcc_libs())
-        self.append_default_flags('CFLAGS', " -pipe -isysroot " + self.sysroot())
-        self.append_default_flags('CXXFLAGS', " -pipe -isysroot " + self.sysroot())
+        v7_cflags = ''
+        if arch == 'armv7':
+            v7_cflags = ' -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'
+        self.append_default_flags('CFLAGS', v7_cflags + " -pipe -isysroot " + self.sysroot())
+        self.append_default_flags('CXXFLAGS', v7_cflags + " -pipe -isysroot " + self.sysroot())
 
     def configure(self, install_dir, env_vars=None, configure="", deps=None):
         if not self.__toolchain_generated:
