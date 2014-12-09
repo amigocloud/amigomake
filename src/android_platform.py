@@ -12,7 +12,13 @@ class AndroidPlatform(Platform):
         self.__toolchain_install_path = toolchain_install_path
         self.__toolchain_generated = False
 
-        toolchain_bin = os.path.join(toolchain_install_path, "bin/" + self.name())
+        bin_prefix = name
+        if arch == 'x86':
+            bin_prefix = 'i686-linux-android'
+        elif 'arm' not in arch:
+            bin_prefix = arch+'-linux-android'
+
+        toolchain_bin = os.path.join(toolchain_install_path, "bin/" + bin_prefix)
         self._set_default_flags('CC', toolchain_bin + "-" + self.default_flags('CC'))
         self._set_default_flags('CXX', toolchain_bin + "-" + self.default_flags('CXX'))
         self._set_default_flags('LD', toolchain_bin + "-ld")
@@ -41,6 +47,9 @@ class AndroidPlatform(Platform):
 
     def sdk_version(self):
         return self.__sdk_version
+
+    def toolchain_version(self):
+        return self.__toolchain_version
 
     def sysroot(self):
         return os.path.join(self.__toolchain_install_path, "sysroot")

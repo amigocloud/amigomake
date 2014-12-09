@@ -51,6 +51,8 @@ def main():
                                 help='Specify path to the Android NDK(Required)', metavar='')
     parser_android.add_argument('-v', '--sdk-version', required=True, dest='version',
                                 help='Specify Android SDK version to use(Required)', metavar='')
+    parser_android.add_argument('-t', '--toolchain-version', dest='toolchain_version',
+                                help='Specify NDK toolchain version to use (4.8 by default)', metavar='')
     ### iOS ###
     parser_ios = subparsers.add_parser('ios')
     parser_ios.add_argument('-v', '--sdk-version', required=True, dest='version',
@@ -71,7 +73,10 @@ def main():
         amigo_config.CXX11 = True
         
     if not params.arch:
-        params.arch = 'armv7'
+        if params.platform == 'android':        
+            params.arch = 'arm'
+        else:
+            params.arch = 'armv7'
     if not params.rootdir:
         params.rootdir = '/tmp/build/root/'
 
@@ -115,8 +120,16 @@ def main():
 
     ### Set Up Platform ###
     if params.platform == 'android':
-        platform = AndroidPlatform("arm-linux-androideabi", params.arch, params.ndk_path,
-                                   params.version, "4.8", "/tmp/android-standalone-toolchain")
+        toolchain = params.arch
+        if 'arm' in toolchain:
+            toolchain += '-linux-androideabi'
+        elif 'x86' not in toolchain:
+            toolchain += '-linux-android'
+        if not params.toolchain_version:
+            params.toolchain_version = '4.8'        
+        platform = AndroidPlatform(toolchain, params.arch, params.ndk_path,
+                                   params.version, params.toolchain_version, 
+                                   "/tmp/android-standalone-toolchain/"+toolchain+"-"+params.toolchain_version)
     elif params.platform == 'ios':
         platform = IOSPlatform(params.version, params.arch, params.sim)
     else:
