@@ -48,7 +48,6 @@ None
 ####iOS:
 ```
 -v , --sdk-version   Specify iOS SDK version to use(Required)
---sim                Build for simulator
 ```
 ##Examples:
 
@@ -61,7 +60,7 @@ amigomake --all clean ios -v 7.0
 amigomake ios -v 7.0
 
 # Build iOS7 simulator build and external dependencies:
-amigomake --all ios -v 7.0 --sim
+amigomake --all -a i386 ios -v 7.0
 ```
 
 ###Android:
