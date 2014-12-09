@@ -24,20 +24,21 @@ class IOSPlatform(Platform):
         super(IOSPlatform, self).__init__(name, arch, sdk_path)
         self.append_default_flags(Platform.CONFIG_FLAGS,
                                   "--host=" + host_arch + "-apple-darwin")
-        cflags = (arch_flags + " -pipe -no-cpp-precomp" +
-                  " -isysroot " + sdkroot + " -miphoneos-version-min=" + min_version)
+        cppflags = " -pipe -no-cpp-precomp -miphoneos-version-min=" + min_version
+        cflags = arch_flags + " -isysroot " + sdkroot + " " + cppflags
         cxxflags = cflags
         ldflags = arch_flags + " -Wl,-dead_strip -miphoneos-version-min=" + min_version
         if amigo_config.CXX11:
             cxxflags += " -stdlib=libc++"
         self.append_default_flags('CFLAGS', cflags)
-        self.append_default_flags('CPPFLAGS', cflags)
+        self.append_default_flags('CPPFLAGS', cppflags)
         self.append_default_flags('CXXFLAGS', cxxflags)
         self.append_default_flags('LDFLAGS', ldflags)
 
         toolchain_bin = os.path.join(devroot, 'Toolchains/XcodeDefault.xctoolchain/usr/bin/')
         self._set_default_flags('CC', toolchain_bin + self.default_flags('CC'))
         self._set_default_flags('CXX', toolchain_bin + self.default_flags('CXX'))
+        self._set_default_flags('CPP', toolchain_bin + "cpp")
         self._set_default_flags('LD', toolchain_bin + "ld")
         self._set_default_flags('AR', toolchain_bin + "ar")
         self._set_default_flags('AS', toolchain_bin + "as")
