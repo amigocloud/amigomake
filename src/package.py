@@ -39,7 +39,7 @@ class Package(object):
     # Returns the installation directory for the specified platform
     def install_dir(self, platform):
         if platform not in self._install_dirs:
-            self.set_install_dir(platform, os.path.join(self._package_dir, 'build/'+platform.name()))
+            self.set_install_dir(platform, os.path.join(self._package_dir, 'build/'+platform.unique_name()))
         return self._install_dirs[platform]
 
     # Collect files in the package dir that match the source extensions

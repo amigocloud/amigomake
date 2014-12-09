@@ -7,4 +7,4 @@ def init():
     VERBOSE = False
     GCC = False
     CXX11 = False
-    VERSION = '0.1.1'
+    VERSION = '0.1.2'

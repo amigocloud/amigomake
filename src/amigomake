@@ -16,8 +16,8 @@ def main():
 
     ### Parser Arguments ###
     parser = argparse.ArgumentParser(description='Build amigomake projects')
-    parser.add_argument('-a', '--arch', dest='arch',
-                        help='Specify the target architecture (armv7 by default)', metavar='')
+    parser.add_argument('-a', '--arch', dest='archs', action='append',
+                        help='Specify the target architecture, may be specified multiple times (armv7 by default)', metavar='')
     parser.add_argument('-f', '--file', dest='file_path',
                         help='Specify AmigoMakefile path', metavar='')
     parser.add_argument('-r', '--root', dest='rootdir',
@@ -57,9 +57,7 @@ def main():
     parser_ios = subparsers.add_parser('ios')
     parser_ios.add_argument('-v', '--sdk-version', required=True, dest='version',
                             help='Specify iOS SDK version to use(Required)', metavar='')
-    parser_ios.add_argument('--sim', dest='sim',
-                            help='Build for simulator',
-                            action="store_true")
+
     ### X86 ##
     subparsers.add_parser('x86')
 
@@ -72,10 +70,12 @@ def main():
     if params.cxx11:
         amigo_config.CXX11 = True
         
-    if not params.arch:
-        params.arch = 'armv7'
-    if not params.rootdir:
-        params.rootdir = '/tmp/build/root/'
+    if not params.archs:
+        params.archs = ['armv7']
+
+    base_rootdir = params.rootdir
+    if not base_rootdir:
+        base_rootdir = '/tmp/build/root/'
 
     ### Import Makefile ###
     file_path = params.file_path
@@ -104,72 +104,76 @@ def main():
         logging.exception('')
         sys.exit(1)
         return
-        
-    ### Run Configure ###
-    if(hasattr(makefile, 'configure')):
-        try:
-            makefile.configure(params)
-        except:
-            print (error_str('ERROR') + ': configure failed!')
-            logging.exception('')
-            sys.exit(1)
-            return
 
-    ### Set Up Platform ###
-    if params.platform == 'android':
-        toolchain = params.arch
-        if 'arm' in toolchain:
-            toolchain = 'arm-linux-androideabi'
-        elif 'x86' not in toolchain:
-            toolchain += '-linux-android'
-        if not params.toolchain_version:
-            params.toolchain_version = '4.8'        
-        platform = AndroidPlatform(toolchain, params.arch, params.ndk_path,
-                                   params.version, params.toolchain_version, 
-                                   "/tmp/android-standalone-toolchain/"+toolchain+"-"+params.toolchain_version)
-    elif params.platform == 'ios':
-        platform = IOSPlatform(params.version, params.arch, params.sim)
-    else:
-        platform = X86Platform(params.arch)
+    platform_tag = params.platform
 
-    params.rootdir += platform.name()
+    for params.arch in params.archs:
+        print (('\n\t%-15s\t' % ('Setting Arch:')) + params.arch)
+        ### Run Configure ###
+        if(hasattr(makefile, 'configure')):
+            try:
+                makefile.configure(params)
+            except:
+                print (error_str('ERROR') + ': configure failed!')
+                logging.exception('')
+                sys.exit(1)
+                return
 
-    ### Setting Up Flags ###
-    extra_flags = '-Os'
-    if params.debug:
-        extra_flags = '-g -ggdb -O0'
-    platform.append_default_flags('CFLAGS', extra_flags)
-    platform.append_default_flags('CPPFLAGS', extra_flags)
-    platform.append_default_flags('CXXFLAGS', extra_flags)
-    platform.append_default_flags('LDFLAGS', extra_flags)
+        ### Set Up Platform ###
+        if platform_tag == 'android':
+            toolchain = params.arch
+            if 'arm' in toolchain:
+                toolchain = 'arm-linux-androideabi'
+            elif 'x86' not in toolchain:
+                toolchain += '-linux-android'
+            if not params.toolchain_version:
+                params.toolchain_version = '4.8'        
+            platform = AndroidPlatform(toolchain, params.arch, params.ndk_path,
+                                       params.version, params.toolchain_version, 
+                                       "/tmp/android-standalone-toolchain/"+toolchain+"-"+params.toolchain_version)
+        elif platform_tag == 'ios':
+            platform = IOSPlatform(params.version, params.arch)
+        else:
+            platform = X86Platform(params.arch)
 
-    params.platform = platform
+        params.rootdir = base_rootdir + platform.name() + '/' + params.arch
+
+        ### Setting Up Flags ###
+        extra_flags = '-Os'
+        if params.debug:
+            extra_flags = '-g -ggdb -O0'
+        platform.append_default_flags('CFLAGS', extra_flags)
+        platform.append_default_flags('CPPFLAGS', extra_flags)
+        platform.append_default_flags('CXXFLAGS', extra_flags)
+        platform.append_default_flags('LDFLAGS', extra_flags)
+
+        params.platform = platform
     
-    ### Run init ###
-    if(hasattr(makefile, 'init')):
-        try:
-            makefile.init(platform, params)
-        except:
-            print (error_str('ERROR') + ': init failed!')
-            logging.exception('')
-            sys.exit(1)
-            return
+        ### Run init ### 
+        if(hasattr(makefile, 'init')):
+            try:
+                makefile.init(platform, params)
+            except:
+                print (error_str('ERROR') + ': init failed!')
+                logging.exception('')
+                sys.exit(1)
+                return
 
-    ### Run action ###
-    if(hasattr(makefile, params.action)):
-        try:
-            action = getattr(makefile, params.action)
-            action(platform, params)
-        except SystemExit:
-            sys.exit(1)
-            return
-        except:
-            print (error_str('ERROR') + ': \'' + params.action + '\' failed!')
-            logging.exception('')
-            sys.exit(1)
-            return
-    else:
-        print (warn_str('WARNING') + ': \'' + params.action + '\' does not exist in AmigoMakefile(' + file_path + ')')
+        ### Run action ###
+        if(hasattr(makefile, params.action)):
+            try:
+                action = getattr(makefile, params.action)
+                action(platform, params)
+            except SystemExit:
+                sys.exit(1)
+                return
+            except:
+                print (error_str('ERROR') + ': \'' + params.action + '\' failed!')
+                logging.exception('')
+                sys.exit(1)
+                return
+        else:
+            print (warn_str('WARNING') + ': \'' + params.action + '\' does not exist in AmigoMakefile(' + file_path + ')')
 
 if __name__ == "__main__":
     main()

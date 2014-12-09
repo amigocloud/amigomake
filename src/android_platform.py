@@ -47,6 +47,9 @@ class AndroidPlatform(Platform):
         self.append_default_flags('CFLAGS', v7_cflags + " -pipe -isysroot " + self.sysroot())
         self.append_default_flags('CXXFLAGS', v7_cflags + " -pipe -isysroot " + self.sysroot())
 
+    def unique_name(self):
+        return 'android_' + super(AndroidPlatform, self).unique_name()
+
     def configure(self, install_dir, env_vars=None, configure="", deps=None):
         if not self.__toolchain_generated:
             self.__generate_toolchain()

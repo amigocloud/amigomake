@@ -85,7 +85,7 @@ class Freetype(ExternalCPackage):
         self.set_url("http://download.savannah.gnu.org/releases/freetype/" + self.zip_name())
 
     def _build(self, platform, env_vars=None, configure=""):
-        if isinstance(platform, IOSPlatform) and platform.is_sim():
+        if isinstance(platform, IOSPlatform) and platform.arch() == 'i386':
             configure = "./configure --build=x86 " + platform.default_flags(Platform.CONFIG_FLAGS)
         super(Freetype, self)._build(platform, env_vars, configure)
 

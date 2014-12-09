@@ -93,6 +93,9 @@ class Platform(object):
     def name(self):
         return self.__name
 
+    def unique_name(self):
+        return self.__name
+
     # Target Architecture (eg. armv7)
     def arch(self):
         return self.__arch

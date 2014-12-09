@@ -36,7 +36,7 @@ class Boost(ExternalCPackage):
         target = 'iphone'
         toolset = 'darwin'
         arch = 'arm'
-        if platform.is_sim():
+        if platform.arch() == 'i386':
             target += 'sim'
             toolset += '-' + platform.version() + '~iphonesim'
             arch = 'x86'
@@ -224,7 +224,7 @@ using android : arm : {CXX} :
    : <architecture>{BOOST_ARCH} <target-os>iphone
    ;
 """
-        if platform.is_sim():
+        if platform.arch() == 'i386':
             arch = 'x86'
         else:
             arch = 'arm'
