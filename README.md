@@ -19,7 +19,7 @@ android, ios, x86
 ###General Flags:
 ```
 -h, --help         Show this help message and exit
--a, --arch         Specify the target architecture (armv7 by default)
+-a, --arch         Specify the target architecture(s) (armv7 by default)
 -f, --file         Specify AmigoMakefile path
 -r, --root         Specify dir for external dependency soures
 -d, --debug        Compile non-optimized with debug flags
@@ -54,13 +54,13 @@ None
 ###IOS:
 ```bash
 # Clean non sim build and external dependencies:
-amigomake --all clean ios -v 7.0
+amigomake --all -a armv7 -a arm64 clean ios -v 8.1
 
-# Build IOS7 without rebuilding external dependencies:
-amigomake ios -v 7.0
+# Build IOS8 device without rebuilding external dependencies:
+amigomake -a armv7 -a arm64 ios -v 8.1
 
-# Build iOS7 simulator build and external dependencies:
-amigomake --all -a i386 ios -v 7.0
+# Build iOS8 simulator build and external dependencies:
+amigomake --all -a i386 ios -v 8.1
 ```
 
 ###Android:
