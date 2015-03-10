@@ -1,7 +1,7 @@
 AmigoMake
 =========
 
-[Writing an AmigoMakefile](https://github.com/schernetsky/amigomake/wiki/Writing-an-AmigoMakefile)
+Check out the [Wiki](https://github.com/schernetsky/amigomake/wiki) and [How to write an AmigoMakefile](https://github.com/schernetsky/amigomake/wiki/Writing-an-AmigoMakefile)
 
 Take a look at the sample [AmigoMakefile](https://github.com/schernetsky/amigomake/blob/master/SampleAmigoMakefile) which will build an executable out of all C/C++ files in its directory
 
