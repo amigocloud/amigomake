@@ -5,7 +5,7 @@ import os
 
 class IOSPlatform(Platform):
     def __init__(self, version, arch):
-        if arch == 'i386':
+        if arch == 'i386' or arch == 'x86_64' :
             name = 'iPhoneSimulator'
             host_arch = arch
         else:
