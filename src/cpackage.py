@@ -1,3 +1,4 @@
+from __future__ import print_function
 from platform import crush_deps
 from package import Package, older, check_extensions, error_str
 from subprocess import call
@@ -166,31 +167,7 @@ class CPackage(Package):
         # Collect all source files and headers to be compiled
         print (('\t%-15s\t' % (self.name() + ':')) + 'Checking Files')
         src_filenames = set()
-        for file_path in self.files():
-            filename = os.path.basename(file_path)
-            if check_extensions(file_path, self.__header_exts):
-                self._headers.add(file_path)
-            if check_extensions(file_path, self.__src_exts):
-                file_excluded = False
-                if self.__excluded_sources:
-                    for exc_src in self.__excluded_sources:
-                        if exc_src in file_path:
-                            file_excluded = True
-                            break
-                if file_excluded:
-                    continue
-                if self.__included_sources:
-                    for inc_src in self.__included_sources:
-                        if os.path.basename(inc_src) == filename:
-                            if self.__check_duplicates(filename, src_filenames):
-                                sys.exit(1)
-                            self._sources.add(file_path)
-                            break
-                else:
-                    if self.__check_duplicates(filename, src_filenames):
-                        return
-                    self._sources.add(file_path)
-
+        self.__collect_files_by_extension(src_filenames)
         print (('\t%-15s\t' % (self.name() + ':')) + 'Building Dependencies')
         dep_install_dirs = []
         for dep in self.deps():
@@ -374,6 +351,32 @@ class CPackage(Package):
         for include_dir in include_set:
             cflags.append(include_dir)
 
+    def __collect_files_by_extension(self, filenames=set()):
+        for file_path in self.files():
+            filename = os.path.basename(file_path)
+            if check_extensions(file_path, self.__header_exts):
+                self._headers.add(file_path)
+            if check_extensions(file_path, self.__src_exts):
+                file_excluded = False
+                if self.__excluded_sources:
+                    for exc_src in self.__excluded_sources:
+                        if exc_src in file_path:
+                            file_excluded = True
+                            break
+                if file_excluded:
+                    continue
+                if self.__included_sources:
+                    for inc_src in self.__included_sources:
+                        if os.path.basename(inc_src) == filename:
+                            if self.__check_duplicates(filename, filenames):
+                                sys.exit(1)
+                            self._sources.add(file_path)
+                            break
+                else:
+                    if self.__check_duplicates(filename, filenames):
+                        return
+                    self._sources.add(file_path)
+
     # Populates Source<-->Header maps
     def __populate_src_maps(self):
         for file_path in self._sources:
@@ -449,6 +452,38 @@ class CPackage(Package):
                             older(obj_path, [header_file, source_file])):
                         sources_to_recompile.add(source_file)
         return sources_to_recompile
+
+    def cmake(self, platform):
+        print (('\t%-15s\t' % (self.name() + ':')) + 'Collecting Files')
+        self._collect_files()
+        print (('\t%-15s\t' % (self.name() + ':')) + 'Indexing Files')
+        self.__collect_files_by_extension()
+        self.__populate_src_maps()
+        print (('\t%-15s\t' % (self.name() + ':')) + 'Collecting Header Dirs')
+        include_dirs = []
+        for file_path in self._sources:
+            if file_path in self.__src_to_header_map:
+                self.__add_include_flags(file_path, include_dirs)
+
+        include_dirs = ' '.join(map(lambda x: "${PROJECT_SOURCE_DIR}/"+x[3:], list(set(include_dirs))))
+        dep_include_dirs = set()
+        for dep in self.deps():
+            dep_dir = dep.install_dir(platform)
+            if dep_dir is not None:
+                dep_include_dirs.add(' ' + os.path.join(dep_dir, "include"))
+        print (('\t%-15s\t' % (self.name() + ':')) + 'Creating CMakeLists.txt')
+        cmake_file = open('CMakeLists.txt', 'w')
+        print("cmake_minimum_required(VERSION 2.8)", file=cmake_file)
+        print("project(%s)" % self.name(), file=cmake_file)
+        print("include_directories(%s)" % (include_dirs + ' '.join(dep_include_dirs)), file=cmake_file)
+        sources = []
+        for ext in set(self.__header_exts + self.__src_exts):
+            source_str = "SRC_FILES_" + str(ext[1:])
+            sources.append("${%s}" % source_str)
+            print("file(GLOB_RECURSE %s ${PROJECT_SOURCE_DIR}/*%s)" % (source_str, ext), file=cmake_file)
+        if amigo_config.CXX11:
+            print("set(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} -v -std=c++11 -stdlib=libc++\")", file=cmake_file)
+        print("add_library(%s STATIC %s)" % (self.name(), ' '.join(sources)), file=cmake_file)
 
 
 class CompilerFunc(object):
