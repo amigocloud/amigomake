@@ -75,7 +75,7 @@ class AndroidPlatform(Platform):
         system = "--system=" + self.env().system()
         llvm = ''
         if 'clang' in self.default_flags('CC'):
-            llvm = '--llvm_version=3.4'
+            llvm = '--llvm_version=3.5'
         cxx11 = ''
         if amigo_config.CXX11:
             cxx11 = '--stl=libc++'
