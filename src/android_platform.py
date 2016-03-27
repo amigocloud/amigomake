@@ -13,8 +13,12 @@ class AndroidPlatform(Platform):
         self.__toolchain_generated = False
 
         bin_prefix = name
+        target = name
         if arch == 'x86':
             bin_prefix = 'i686-linux-android'
+        elif 'armv8' in arch:
+            bin_prefix = 'aarch64-linux-android'
+            target = arch+'-android-linux'
         elif 'arm' not in arch:
             bin_prefix = arch+'-linux-android'
 
@@ -32,7 +36,7 @@ class AndroidPlatform(Platform):
 
         self.append_default_flags(Platform.CONFIG_FLAGS,
                                   " --host=" + arch + "-android-linux" +
-                                  " --target=" + self.name())
+                                  " --target=" + target)
 
         v7_ldflags = ''
         if arch == 'armv7':
@@ -48,6 +52,8 @@ class AndroidPlatform(Platform):
         self.append_default_flags('CXXFLAGS', v7_cflags + " -pipe -isysroot " + self.sysroot())
 
     def unique_name(self):
+        if 'armv8' in self.arch():
+            return 'android_'+self.arch()+'-linux-android'
         return 'android_' + super(AndroidPlatform, self).unique_name()
 
     def configure(self, install_dir, env_vars=None, configure="", deps=None):

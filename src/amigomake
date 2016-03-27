@@ -52,7 +52,7 @@ def main():
     parser_android.add_argument('-v', '--sdk-version', required=True, dest='version',
                                 help='Specify Android SDK version to use(Required)', metavar='')
     parser_android.add_argument('-t', '--toolchain-version', dest='toolchain_version',
-                                help='Specify NDK toolchain version to use (4.8 by default)', metavar='')
+                                help='Specify NDK toolchain version to use (4.9 by default)', metavar='')
     ### iOS ###
     parser_ios = subparsers.add_parser('ios')
     parser_ios.add_argument('-v', '--sdk-version', required=True, dest='version',
@@ -122,12 +122,14 @@ def main():
         ### Set Up Platform ###
         if platform_tag == 'android':
             toolchain = params.arch
-            if 'arm' in toolchain:
+            if 'armv8' in toolchain:
+                toolchain = 'aarch64-linux-android'
+            elif 'arm' in toolchain:
                 toolchain = 'arm-linux-androideabi'
             elif 'x86' not in toolchain:
                 toolchain += '-linux-android'
             if not params.toolchain_version:
-                params.toolchain_version = '4.8'        
+                params.toolchain_version = '4.9'        
             platform = AndroidPlatform(toolchain, params.arch, params.ndk_path,
                                        params.version, params.toolchain_version, 
                                        "/tmp/android-standalone-toolchain/"+toolchain+"-"+params.toolchain_version)
