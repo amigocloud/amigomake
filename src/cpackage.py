@@ -200,6 +200,9 @@ class CPackage(Package):
         self.__populate_src_maps()
         # Find Sources that require re-compilation
         self.__outdated_sources = self.__needs_recompile()
+        if not self.__outdated_sources:
+            print (('\t%-15s\t' % (self.name() + ':')) + 'No Changes Detected')
+            return
         print (('\t%-15s\t' % (self.name() + ':')) + 'Configuring Platform')
         platform.configure(self.install_dir(platform), env_vars, None, self.deps())
 
