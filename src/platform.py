@@ -58,7 +58,7 @@ def crush_deps(platform, install_dir, output_name, ldflags=''):
                 print (call_str)
             call([call_str], shell=True)
         call_str = (cc + " -shared -o " + output + '.so' +
-              " " + output + '.a' + " " + ldflags)
+            " -Wl,--whole-archive " + output + '.a' + " -Wl,--no-whole-archive " + ldflags)
         if amigo_config.VERBOSE:
             print (call_str)
         call([call_str], shell=True)
