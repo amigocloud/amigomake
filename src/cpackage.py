@@ -451,7 +451,7 @@ class CPackage(Package):
                 for source_file in sources:
                     obj_file = self.__output_name(source_file)
                     obj_path = os.path.join(self.__obj_path, obj_file)
-                    if (os.path.isfile(obj_path) or
+                    if (not os.path.isfile(obj_path) or
                             older(obj_path, [header_file, source_file])):
                         sources_to_recompile.add(source_file)
         return sources_to_recompile
