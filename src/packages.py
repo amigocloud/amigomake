@@ -162,10 +162,9 @@ class OpenSSL(ExternalCPackage):
             env_vars['LDFLAGS'] = (platform.default_flags('LDFLAGS') +
                                    " -dynamiclib -nostdlib -lc -lgcc")
             env_vars['CFLAGS'] = (platform.default_flags('CFLAGS') +
-                                  " -UOPENSSL_BN_ASM_PART_WORDS -DNO_WINDOWS_BRAINDEATH" +
-                                  " -DOPENSSL_NO_ENGINE")
+                                  " -UOPENSSL_BN_ASM_PART_WORDS -DNO_WINDOWS_BRAINDEATH")
             configure = ("./Configure shared no-asm no-krb5 no-gost zlib-dynamic" +
-                         " no-static-engine no-engine --openssldir=" + install_dir + " linux-generic32")
+                         " --openssldir=" + install_dir + " linux-generic32")
         elif isinstance(platform, IOSPlatform):
             env_vars['LDFLAGS'] = (platform.default_flags('LDFLAGS') +
                                    " -dynamiclib")
