@@ -74,21 +74,19 @@ class AndroidPlatform(Platform):
         return os.path.join(self.__toolchain_install_path, "lib/gcc/" + self.name() + "/" + self.__toolchain_version)
 
     def __generate_toolchain(self):
-        builder = os.path.join(self.sdk_path(), "build/tools/make_standalone_toolchain.py")
-        platform = '--api ' + self.sdk_version()
-        install_dir = "--install-dir " + self.__toolchain_install_path
-        if 'armv8' in self.arch():
-            arch = "--arch arm64"
-        elif 'arm' in self.arch():
-            arch = "--arch arm"
-        else:
-            arch = "--arch " + self.arch()
-
-        cxx11 = '--stl stlport'
+        builder = os.path.join(self.sdk_path(), "build/tools/make-standalone-toolchain.sh")
+        platform = '--platform=android-' + self.sdk_version()
+        install_dir = "--install-dir=" + self.__toolchain_install_path
+        toolchain = "--toolchain=" + self.name() + "-" + self.__toolchain_version
+        system = "--system=" + self.env().system()
+        llvm = ''
+        if 'clang' in self.default_flags('CC'):
+            llvm = '--llvm_version=3.5'
+        cxx11 = ''
         if amigo_config.CXX11:
-            cxx11 = '--stl libc++'
+            cxx11 = '--stl=libc++'
+        call_str = builder + " " + platform + " " + install_dir + " " + toolchain + " " + system + " " + llvm + " " + cxx11
 
-        call_str = builder + " " + platform + " " + install_dir + " " + arch + " " + cxx11
         if amigo_config.VERBOSE:
             print (call_str)
         call([call_str], shell=True)
