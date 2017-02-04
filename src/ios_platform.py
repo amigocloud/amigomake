@@ -11,7 +11,7 @@ class IOSPlatform(Platform):
         else:
             name = 'iPhoneOS'
             host_arch = 'arm'
-        min_version = "6.0"
+        min_version = "8.0"
         devroot = '/Applications/Xcode.app/Contents/Developer/'
         sdk_path = os.path.join(devroot, 'Platforms/' + name + '.platform/Developer')
         sdkroot = os.path.join(sdk_path, 'SDKs/' + name + version + '.sdk')
