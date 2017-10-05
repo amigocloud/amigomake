@@ -48,7 +48,8 @@ def crush_deps(platform, install_dir, output_name, ldflags=''):
     os.chdir(tmp_path)
     if lib_files:
         ar_flag = 'crus'
-        call_str = ar + ' ' + ar_flag + ' ' + output + '.a' + " " +tmp_path+"/*/*.o"
+        obj_files = tmp_path + "/*/*.o"
+        call_str = ar + ' ' + ar_flag + ' ' + output + '.a' + " " + obj_files
         if amigo_config.VERBOSE:
             print (call_str)
         call([call_str], shell=True)
@@ -58,7 +59,7 @@ def crush_deps(platform, install_dir, output_name, ldflags=''):
                 print (call_str)
             call([call_str], shell=True)
         call_str = (cc + " -shared -o " + output + '.so' +
-                    " -Wl,-force_load " + output + '.a' + " " + ldflags)
+                    " -Wl,-force_load " + obj_files + " " + ldflags)
         if amigo_config.VERBOSE:
             print (call_str)
         call([call_str], shell=True)
