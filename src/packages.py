@@ -211,11 +211,11 @@ class Curl(ExternalCPackage):
             configure += " --with-random=/dev/urandom"
         else:
             configure += " --target=" + platform.name()
-        configure += (" --with-random=/dev/urandom --enable-optimize --enable-nonblocking" +
+        configure += (" --with-random=/dev/urandom --enable-ipv6 --enable-optimize --enable-nonblocking" +
                       " --disable-ares --disable-ftp --disable-ldap --disable-ldaps" +
                       " --disable-rtsp --disable-dict --disable-telnet --disable-tftp" +
                       " --disable-pop3 --disable-imap --disable-smtp --disable-gopher" +
-                      " --disable-sspi --disable-ipv6 --disable-soname-bump" +
+                      " --disable-sspi --disable-soname-bump" +
                       " --without-polarssl --without-gnutls --without-cyassl" +
                       " --without-axtls --without-libssh2 --disable-manual --disable-verbose" +
                       " --with-zlib=" + install_dir)
