@@ -11,16 +11,17 @@ class AndroidPlatform(Platform):
         self.__toolchain_version = toolchain_version
         self.__toolchain_install_path = toolchain_install_path
         self.__toolchain_generated = False
+        self.__arch = arch
 
         bin_prefix = name
         target = name
-        if arch == 'x86':
-            bin_prefix = 'i686-linux-android'
+        if arch == 'x86_64':
+            bin_prefix = arch+'-linux-android'
         elif 'armv8' in arch:
             bin_prefix = 'aarch64-linux-android'
             target = arch+'-android-linux'
         elif 'arm' not in arch:
-            bin_prefix = arch+'-linux-android'
+            bin_prefix = arch+'-linux-androideabi'
 
         toolchain_bin = os.path.join(toolchain_install_path, "bin/" + bin_prefix)
         self._set_default_flags('CC', toolchain_bin + "-" + self.default_flags('CC'))
@@ -38,18 +39,24 @@ class AndroidPlatform(Platform):
                                   " --host=" + arch + "-android-linux" +
                                   " --target=" + target)
 
-        v7_ldflags = ''
-        if arch == 'armv7':
-            v7_ldflags = ' -march=armv7-a -Wl,--fix-cortex-a8'
-        self.append_default_flags('LDFLAGS', v7_ldflags + 
+        ldflags = ''
+        if 'armv7' in arch:
+            ldflags = ' -march=armv7-a -Wl,--fix-cortex-a8'
+        # elif arch == 'armv8a':
+        #     ldflags = ' -march=armv8-a -Wl,--fix-cortex-a8'
+
+        self.append_default_flags('LDFLAGS', ldflags +
                                   " -fPIC -Wl," +
                                   "-rpath-link=" + self.sysroot() + "/usr/lib" +
                                   " -L" + self.sysroot() + "/usr/lib -L" + self.gcc_libs())
-        v7_cflags = ''
-        if arch == 'armv7':
-            v7_cflags = ' -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'
-        self.append_default_flags('CFLAGS', v7_cflags + " -pipe -isysroot " + self.sysroot())
-        self.append_default_flags('CXXFLAGS', v7_cflags + " -pipe -isysroot " + self.sysroot())
+        cflags = ''
+        if 'armv7' in arch:
+            cflags = ' -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'
+        # elif arch == 'armv8a':
+        #     cflags = ' -march=armv8-a'
+
+        self.append_default_flags('CFLAGS', cflags + " -pipe -isysroot " + self.sysroot())
+        self.append_default_flags('CXXFLAGS', cflags + " -pipe -isysroot " + self.sysroot())
 
     def unique_name(self):
         if 'armv8' in self.arch():
@@ -74,19 +81,21 @@ class AndroidPlatform(Platform):
         return os.path.join(self.__toolchain_install_path, "lib/gcc/" + self.name() + "/" + self.__toolchain_version)
 
     def __generate_toolchain(self):
-        builder = os.path.join(self.sdk_path(), "build/tools/make-standalone-toolchain.sh")
-        platform = '--platform=android-' + self.sdk_version()
+        arch_arg = ''
+        if 'armv7' in self.__arch:
+            arch_arg = '--arch arm'
+        elif 'armv8' in self.__arch:
+            arch_arg = '--arch arm64'
+        elif 'x86_64' in self.__arch:
+            arch_arg = '--arch x86_64'
+
+        builder = os.path.join(self.sdk_path(), "build/tools/make_standalone_toolchain.py --force")
+        api = '--api ' + self.sdk_version()
         install_dir = "--install-dir=" + self.__toolchain_install_path
-        toolchain = "--toolchain=" + self.name() + "-" + self.__toolchain_version
-        system = "--system=" + self.env().system()
-        llvm = ''
-        if 'clang' in self.default_flags('CC'):
-            llvm = '--llvm_version=3.5'
         cxx11 = ''
         if amigo_config.CXX11:
             cxx11 = '--stl=libc++'
-        call_str = builder + " " + platform + " " + install_dir + " " + toolchain + " " + system + " " + llvm + " " + cxx11
-
+        call_str = builder + " " + arch_arg + " " + api + " " + install_dir + " " + cxx11
         if amigo_config.VERBOSE:
             print (call_str)
         call([call_str], shell=True)
