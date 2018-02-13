@@ -126,10 +126,10 @@ def main():
                 toolchain = 'aarch64-linux-android'
             elif 'arm' in toolchain:
                 toolchain = 'arm-linux-androideabi'
-            elif 'x86_64' not in toolchain:
-                toolchain += 'x86_64'
-            elif 'x86' not in toolchain:
-                toolchain += 'x86'
+            # elif 'x86_64' == toolchain:
+            #     toolchain += 'x86_64'
+            # elif 'x86' == toolchain:
+            #     toolchain += 'x86'
             if not params.toolchain_version:
                 params.toolchain_version = '4.9'        
             platform = AndroidPlatform(toolchain, params.arch, params.ndk_path,

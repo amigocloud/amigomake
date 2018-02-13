@@ -17,6 +17,8 @@ class AndroidPlatform(Platform):
         target = name
         if arch == 'x86_64':
             bin_prefix = arch+'-linux-android'
+        elif arch == 'x86':
+            bin_prefix = 'i686-linux-android'
         elif 'armv8' in arch:
             bin_prefix = 'aarch64-linux-android'
             target = arch+'-android-linux'
@@ -88,6 +90,8 @@ class AndroidPlatform(Platform):
             arch_arg = '--arch arm64'
         elif 'x86_64' in self.__arch:
             arch_arg = '--arch x86_64'
+        elif 'x86' == self.__arch:
+            arch_arg = '--arch x86'
 
         builder = os.path.join(self.sdk_path(), "build/tools/make_standalone_toolchain.py --force")
         api = '--api ' + self.sdk_version()
