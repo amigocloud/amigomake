@@ -4,7 +4,7 @@ import amigo_config
 
 class X86Platform(Platform):
     def __init__(self, arch):
-        super(X86Platform, self).__init__("x86", arch)
+        super(X86Platform, self).__init__("native_x86", arch)
         cflags = " -fPIC -pipe -isysroot /"
         cxxflags = cflags
         #if amigo_config.CXX11:

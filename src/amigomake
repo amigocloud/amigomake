@@ -59,7 +59,7 @@ def main():
                             help='Specify iOS SDK version to use(Required)', metavar='')
 
     ### X86 ##
-    subparsers.add_parser('x86')
+    subparsers.add_parser('native_x86')
 
     params = parser.parse_args()
 
