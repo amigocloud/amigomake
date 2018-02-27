@@ -14,12 +14,12 @@ sudo ./install.sh
 
 ##Usage:
 ```bash
-amigomake [flags] [action] {android,ios,x86} [platform-flags]
+amigomake [flags] [action] {android,ios,native_x86} [platform-flags]
 ```
 
 ###Supported Platforms: 
 
-android, ios, x86
+android, ios, native_x86
 
 ###General Flags:
 ```
@@ -77,7 +77,7 @@ amigomake android -n ~/android-ndk/ -v 14
 ###x86:
 ```bash
 # Build x86 without rebuilding external dependencies:
-amigomake x86
+amigomake native_x86
 ```
 
 ###External Libraries:
