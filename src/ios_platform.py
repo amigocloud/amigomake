@@ -5,13 +5,13 @@ import os
 
 class IOSPlatform(Platform):
     def __init__(self, version, arch):
-        if arch == 'i386' or arch == 'x86_64' :
+        if arch == 'i386' or arch == 'x86_64':
             name = 'iPhoneSimulator'
             host_arch = arch
         else:
             name = 'iPhoneOS'
             host_arch = 'arm'
-        min_version = "8.0"
+        min_version = "10.0"
         devroot = '/Applications/Xcode.app/Contents/Developer/'
         sdk_path = os.path.join(devroot, 'Platforms/' + name + '.platform/Developer')
         sdkroot = os.path.join(sdk_path, 'SDKs/' + name + version + '.sdk')
@@ -19,10 +19,10 @@ class IOSPlatform(Platform):
         super(IOSPlatform, self).__init__(name, arch, sdk_path)
         self.append_default_flags(Platform.CONFIG_FLAGS,
                                   "--host=" + host_arch + "-apple-darwin")
-        cppflags = " -pipe -no-cpp-precomp -miphoneos-version-min=" + min_version
+        cppflags = " -pipe -miphoneos-version-min=" + min_version
         cflags = " -arch " + arch + " -isysroot " + sdkroot + " " + cppflags
         cxxflags = cflags
-        ldflags = " -arch " + arch + " -Wl,-dead_strip -miphoneos-version-min=" + min_version
+        ldflags = " -arch " + arch + " -miphoneos-version-min=" + min_version
         if amigo_config.CXX11:
             cxxflags += " -stdlib=libc++"
         self.append_default_flags('CFLAGS', cflags)

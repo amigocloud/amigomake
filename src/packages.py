@@ -61,7 +61,7 @@ class Sqlite(ExternalCPackage):
     def __init__(self, version, rootdir, package_type=CPackage.STATIC_LIB):
         super(Sqlite, self).__init__(version, rootdir, package_type, 'sqlite3')
         self.set_zip_name("sqlite-amalgamation-" + version + ".zip")
-        self.set_url("http://www.sqlite.org/2014/" + self.zip_name())
+        self.set_url("http://www.sqlite.org/2018/" + self.zip_name())
         self.should_install_headers(True)
         self.__package_dir = os.path.join(rootdir, 'sqlite-amalgamation-' + version)
 

@@ -445,6 +445,13 @@ class CPackage(Package):
     # Returns a set of source files that require recompilation
     def __needs_recompile(self):
         sources_to_recompile = set()
+        for source_file in self._sources:
+            if not (source_file  in self.__src_to_header_map and self.__src_to_header_map[source_file]):
+                obj_file = self.__output_name(source_file)
+                obj_path = os.path.join(self.__obj_path, obj_file)
+                if (not os.path.isfile(obj_path) or
+                        older(obj_path, [source_file])):
+                    sources_to_recompile.add(source_file)
         for header_file in self._headers:
             if header_file in self.__header_to_src_map:
                 sources = self.__header_to_src_map[header_file]
