@@ -57,8 +57,8 @@ class AndroidPlatform(Platform):
         # elif arch == 'armv8a':
         #     cflags = ' -march=armv8-a'
 
-        self.append_default_flags('CFLAGS', cflags + " -pipe -isysroot " + self.sysroot())
-        self.append_default_flags('CXXFLAGS', cflags + " -pipe -isysroot " + self.sysroot())
+        self.append_default_flags('CFLAGS', cflags + " -fPIC  -pipe -isysroot " + self.sysroot())
+        self.append_default_flags('CXXFLAGS', cflags + " -fPIC  -pipe -isysroot " + self.sysroot())
 
     def unique_name(self):
         if 'armv8' in self.arch():
